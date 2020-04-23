@@ -1,0 +1,11 @@
+<launch>
+	<arg name="veh" default="$(env VEHICLE_NAME)"/>
+
+	<include file="$(find duckietown_demos)/launch/lane_following.launch" />
+	<remap from="detection_node/image" to="anti_instagram_node/corrected_image/compressed" />
+	<remap from="detection_node/joy" to="joy" />
+	
+	<group ns="$(arg veh)">
+		<node pkg="detection_node" name="detection_node" type="detection_node.py" output="screen" />
+	</group>
+</launch>

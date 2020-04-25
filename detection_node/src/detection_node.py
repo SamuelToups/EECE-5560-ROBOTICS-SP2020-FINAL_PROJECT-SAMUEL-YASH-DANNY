@@ -18,20 +18,9 @@ class DetectionNode:
                 self.duckie_detected = rospy.Publisher("~duckie_detected", BoolStamped, queue_size=1)
 		self.duckie_pose = rospy.Publisher("~pose",Pose2DStamped, queue_size=1) 
 		self.mask = rospy.Publisher("~mask", Image, queue_size=1)
-		self.lane_following = rospy.Publisher("~joy", Joy, queue_size=1)
 
 		self.low_range = np.array([25,180,180])
                 self.high_range = np.array([35,255,255])
-
-		self.stop = Joy()
-		self.start = Joy()
-		self.stop.header.seq = self.start.header.seq = 0
-        	self.stop.header.stamp.secs = self.start.header.stamp.secs = 0
-        	self.stop.header.stamp.nsecs = self.start.header.stamp.nsecs = 0
-        	self.stop.header.frame_id = self.start.header.frame_id = ''
-        	self.stop.axes = self.start.axes = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
-        	self.stop.buttons = [0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0]
-		self.start.buttons = [0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0]
 
         def detection(self, msg):
                 cv_img = self.bridge.compressed_imgmsg_to_cv2(msg, "bgr8")
@@ -66,7 +55,7 @@ class DetectionNode:
 
                 img_keypoints = cv2.drawKeypoints(cv_crop, keypoints, cv_crop, color=(0,0,255), flags=cv2.DRAW_MATCHES_FLAGS_DRAW_RICH_KEYPOINTS)
 		img_keypoints_out = self.bridge.cv2_to_imgmsg(cv_crop, "bgr8")
-		img_mask_out =self.bridge.cv2_to_imgmsg(mask, "mono8")
+		img_mask_out = self.bridge.cv2_to_imgmsg(mask, "mono8")
 		self.detection_image.publish(img_keypoints_out)
 		self.mask.publish(img_mask_out)
 

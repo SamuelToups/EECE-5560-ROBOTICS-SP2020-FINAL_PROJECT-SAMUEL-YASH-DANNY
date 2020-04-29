@@ -1,0 +1,5 @@
+<launch>
+  <include file="$(find detection_node)/launch/detection.launch"/>
+  <include file="$(find duckie_ctrl_node)/launch/duckie_ctrl.launch"/>
+  <include file="$(find remote_control)/launch/remote_control.launch"/>
+</launch>

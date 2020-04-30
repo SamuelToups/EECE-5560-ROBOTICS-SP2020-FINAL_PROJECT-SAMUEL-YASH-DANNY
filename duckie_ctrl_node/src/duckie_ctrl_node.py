@@ -7,6 +7,9 @@ from duckietown_msgs.msg import BoolStamped, Twist2DStamped
 class DuckieController:
 
     def __init__(self):
+        # block lane follow override message
+        self.blockLfOverrideMsg = False
+
         # stop lane follow (from: object detect node)
         rospy.Subscriber("lane_follow_override", BoolStamped, self.lane_follow_override_cb)
 
@@ -23,7 +26,12 @@ class DuckieController:
         self.pub_car_cmd = rospy.Publisher("lane_controller_node/car_cmd", Twist2DStamped, queue_size=1)
 
     def lane_follow_override_cb(self, data):
-        if data.data == True:
+
+        # this should check and also set the block incomming flag
+        if data.data == True and self.blockLfOverrideMsg == False:
+            # prevent other msgs from invoking remote control node
+            self.blockLfOverrideMsg = True
+
             # publish message to stop lane follow
             override_msg = BoolStamped()
             override_msg.header.stamp = data.header.stamp
@@ -54,7 +62,13 @@ class DuckieController:
             self.pub_steering.publish(remote_ctrl_msg)
 
     def remote_steering_complete_cb(self, data):
+
+        # this should clear the block incomming flag
+
         if data.data == True:
+            # allow lf override msgs
+            self.blockLfOverrideMsg = False
+
             # publish message to start lane follow
             override_msg = BoolStamped()
             override_msg.header.stamp = data.header.stamp

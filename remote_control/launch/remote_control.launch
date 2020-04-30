@@ -1,9 +1,11 @@
 <launch>
   <arg name="veh" default="$(env VEHICLE_NAME)"/>
 
-  <node pkg="remote_control" name="remote_controller_node" type="remote_control_node.py">
-    <remap from="pose" to="/default/detection_node/pose"/>
-    <remap from="remote_steering_start" to="/default/duckie_ctrl_node/remote_steering_start"/>
-    <remap from="remote_steering_complete" to="/default/duckie_ctrl_node/remote_steering_complete"/>
-  </node>
+  <group ns="$(arg veh)">
+    <node pkg="remote_control" name="remote_controller_node" type="remote_control_node.py">
+      <remap from="pose" to="detection_node/pose"/>
+      <remap from="remote_steering_start" to="duckie_ctrl_node/remote_steering_start"/>
+      <remap from="remote_steering_complete" to="duckie_ctrl_node/remote_steering_complete"/>
+    </node>
+  </group>
 </launch>    

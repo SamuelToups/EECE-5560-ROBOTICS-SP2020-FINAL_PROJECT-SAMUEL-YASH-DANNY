@@ -1,0 +1,30 @@
+<launch>
+  <arg name="veh" default="$(env VEHICLE_NAME)"/>
+
+  <include file="$(find duckietown_demos)/launch/lane_following.launch"/>
+
+  <group ns="$(arg veh)">
+
+    <!-- remote control node -->
+    <node pkg="remote_control" name="remote_controller_node" type="remote_control_node.py">
+      <remap from="pose" to="detection_node/pose"/>
+      <remap from="remote_steering_start" to="duckie_ctrl_node/remote_steering_start"/>
+      <remap from="remote_steering_complete" to="duckie_ctrl_node/remote_steering_complete"/>
+    </node>
+
+    <!-- duckie control node -->
+    <node pkg="duckie_ctrl_node" name="duckie_ctrl_node" type="duckie_ctrl_node.py">
+      <remap from="joy_mapper_node/joystick_override" to="lane_controller_node/switch"/>
+      <remap from="lane_follow_override" to="detection_node/duckie_detected"/>
+      <remap from="remote_steering_complete" to="duckie_ctrl_node/remote_steering_complete"/>
+    </node>
+
+    <!-- detection node -->
+    <node pkg="detection_node" name="detection_node" type="detection_node.py" output="screen">
+      <remap from="detection_node/image" to="anti_instagram_node/corrected_image/compressed"/>
+      <remap from="detection_node/joy" to="joy"/>
+    </node>
+
+  </group>
+
+</launch>

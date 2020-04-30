@@ -1,4 +1,5 @@
 <launch>
+<<<<<<< HEAD
   <arg name="veh" default="$(env VEHICLE_NAME)"/>
 
   <include file="$(find duckietown_demos)/launch/lane_following.launch"/>
@@ -27,4 +28,9 @@
 
   </group>
 
+=======
+  <include file="$(find detection_node)/launch/detection.launch"/>
+  <include file="$(find duckie_ctrl_node)/launch/duckie_ctrl.launch"/>
+  <include file="$(find remote_control)/launch/remote_control.launch"/>
+>>>>>>> 3abe6f7a43b111fd920d8659a7a057bb74a0c5bc
 </launch>

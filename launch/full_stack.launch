@@ -17,6 +17,7 @@
       <remap from="joy_mapper_node/joystick_override" to="lane_controller_node/switch"/>
       <remap from="lane_follow_override" to="detection_node/duckie_detected"/>
       <remap from="remote_steering_complete" to="duckie_ctrl_node/remote_steering_complete"/>
+      <remap from="remote_steering_start" to="duckie_ctrl_node/remote_steering_start"/>
     </node>
 
     <!-- detection node -->

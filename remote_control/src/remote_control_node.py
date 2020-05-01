@@ -69,7 +69,7 @@ class RemoteController:
 
         deviation_amount = np.floor( msg.x - ( self.IMAGE_WIDTH / 2.0 ) * ( 1.0 - ( msg.y / self.IMAGE_HEIGHT ) ) )
 
-        dt = abs(deviation_amount)
+        dt = abs(deviation_amount) / 100
 
 	rotation_direction = np.sign(deviation_amount)
 
@@ -105,19 +105,19 @@ class RemoteController:
 
         complete_msg.data = True
 
-        pub_car_cmd.publish(rotate_out_msg)
+        self.pub_car_cmd.publish(rotate_out_msg)
         rospy.sleep(dt)
-        pub_car_cmd.publish(drive_out_msg)
+        self.pub_car_cmd.publish(drive_out_msg)
         rospy.sleep(dt)
-        pub_car_cmd.publish(rotate_back_msg)
+        self.pub_car_cmd.publish(rotate_back_msg)
         rospy.sleep(2*dt)
-        pub_car_cmd.publish(drive_back_msg)
+        self.pub_car_cmd.publish(drive_back_msg)
         rospy.sleep(dt)
-        pub_car_cmd.publish(rotate_straight_msg)
+        self.pub_car_cmd.publish(rotate_straight_msg)
         rospy.sleep(dt)
-        pub_car_cmd.publish(stop_msg)
+        self.pub_car_cmd.publish(stop_msg)
 
-        pub_done.publish(complete_msg)
+        self.pub_done.publish(complete_msg)
 
 if __name__ == '__main__':
         rospy.init_node('remote_control_node', anonymous=False)

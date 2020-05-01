@@ -11,7 +11,8 @@ from cv_bridge import CvBridge
 class DetectionNode:
         def __init__(self):
                 self.bridge = CvBridge()
-
+		self.count = 0
+		self.firstDetection = None
                 rospy.Subscriber("~image", CompressedImage, self.detection, queue_size=1, buff_size=2**24)
 
 		self.detection_image = rospy.Publisher("~detection_image", Image, queue_size=1)
@@ -32,9 +33,9 @@ class DetectionNode:
                 params = cv2.SimpleBlobDetector_Params()
                 params.filterByColor = False
                 params.filterByArea = True
-                params.minArea = 100
+                params.minArea = 120
                 params.filterByInertia = True
-		params.minInertiaRatio = 0.5
+		params.minInertiaRatio = 0.7
                 params.filterByConvexity = False
                 params.filterByCircularity = False
                 dectector = cv2.SimpleBlobDetector_create(params)
@@ -42,16 +43,26 @@ class DetectionNode:
                 keypoints = dectector.detect(mask)
 
 		if len(keypoints) > 0:
-			detect_msg = BoolStamped()
-			detect_msg.header.stamp = rospy.Time.now()
-			detect_msg.data = True
-			pose_msg = Pose2DStamped()
-			pose_msg.header.stamp = rospy.Time.now()
-			pose_msg.x = keypoints[0].pt[0]
-			pose_msg.y = keypoints[0].pt[1]
-			pose_msg.theta = 0
-			self.duckie_detected.publish(detect_msg)
-			self.duckie_pose.publish(pose_msg)
+			self.count += 1
+			if self.firstDetection is not None:
+				self.firstDetection = rospy.get_time()
+			if self.count >= 3:
+				self.count = 0
+				self.firstDetection = None
+				detect_msg = BoolStamped()
+				detect_msg.header.stamp = rospy.Time.now()
+				detect_msg.data = True
+				pose_msg = Pose2DStamped()
+				pose_msg.header.stamp = rospy.Time.now()
+				pose_msg.x = keypoints[0].pt[0]
+				pose_msg.y = keypoints[0].pt[1]
+				pose_msg.theta = 0
+				self.duckie_detected.publish(detect_msg)
+				self.duckie_pose.publish(pose_msg)
+
+		if self.firstDetection is not None:
+			if (rospy.get_time() - self.firstDetection) > 5:
+				count = 0
 
                 img_keypoints = cv2.drawKeypoints(cv_crop, keypoints, cv_crop, color=(0,0,255), flags=cv2.DRAW_MATCHES_FLAGS_DRAW_RICH_KEYPOINTS)
 		img_keypoints_out = self.bridge.cv2_to_imgmsg(cv_crop, "bgr8")

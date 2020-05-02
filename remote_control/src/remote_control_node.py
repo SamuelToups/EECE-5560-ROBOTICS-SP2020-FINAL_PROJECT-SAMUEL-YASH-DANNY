@@ -20,28 +20,37 @@ class RemoteController:
         self.IMAGE_HEIGHT = 67.0
 
         #cmd velocities
-        self.omega = 0.8
+        self.omega = 8.0
         self.v = 0.5
 
         self.steering_enabled = False
+        self.last_start = BoolStamped()
+        self.last_pose = Pose2DStamped()
 
         #subscribers
         rospy.Subscriber("remote_steering_start", BoolStamped, self.start_steering_cb)
-        rospy.Subscriber("pose", Pose2DStamped, self.avoidance_cb)
+        rospy.Subscriber("pose", Pose2DStamped, self.pose_cb)
 
         #publishsers
         self.pub_done = rospy.Publisher("remote_steering_complete", BoolStamped, queue_size=1)
         self.pub_car_cmd = rospy.Publisher("lane_controller_node/car_cmd", Twist2DStamped, queue_size=1)
 
     def start_steering_cb(self, msg):
-        self.steering_enabled = msg
+        self.last_start = msg
+        if (self.last_pose.header.stamp - self.last_start.header.stamp).to_sec() < 1:
+            self.avoidance(self.last_pose)
 
-    def avoidance_cb(self, msg):
+    def pose_cb(self, msg):
+        self.last_pose = msg
+        if (self.last_pose.header.stamp - self.last_start.header.stamp).to_sec() < 1:
+            self.avoidance(self.last_pose)
 
-        #return if not active
-        if not self.steering_enabled:
+    def avoidance(self, msg):
+
+        #return if already active
+        if self.steering_enabled:
             return
-
+        self.steering_enabled = True
 
         #amount to turn is the distance between the center of the blob and the center of the image
 
@@ -69,13 +78,14 @@ class RemoteController:
 
         deviation_amount = np.floor( msg.x - ( self.IMAGE_WIDTH / 2.0 ) * ( 1.0 - ( msg.y / self.IMAGE_HEIGHT ) ) )
 
-        dt = abs(deviation_amount) / 100
+        dt = abs(deviation_amount) / 500
 
 	rotation_direction = np.sign(deviation_amount)
 
         if rotation_direction == 0:
             rotation_direction = 1
 
+        back_up_msg = Twist2DStamped()
         rotate_out_msg = Twist2DStamped()
         drive_out_msg = Twist2DStamped()
         rotate_back_msg = Twist2DStamped()
@@ -84,6 +94,9 @@ class RemoteController:
         stop_msg = Twist2DStamped()
         complete_msg = BoolStamped()
 
+
+        back_up_msg.v = self.v * -1
+        back_up_msg.omega = 0
 
         rotate_out_msg.v = 0
         rotate_out_msg.omega = self.omega * rotation_direction
@@ -105,19 +118,23 @@ class RemoteController:
 
         complete_msg.data = True
 
+        self.pub_car_cmd.publish(back_up_msg)
+        rospy.sleep(dt / 4)
         self.pub_car_cmd.publish(rotate_out_msg)
-        rospy.sleep(dt)
+        rospy.sleep(dt / 2)
         self.pub_car_cmd.publish(drive_out_msg)
-        rospy.sleep(dt)
+        rospy.sleep(dt / 2)
         self.pub_car_cmd.publish(rotate_back_msg)
-        rospy.sleep(2*dt)
+        rospy.sleep(dt / 2)
         self.pub_car_cmd.publish(drive_back_msg)
-        rospy.sleep(dt)
+        rospy.sleep(dt / 2)
         self.pub_car_cmd.publish(rotate_straight_msg)
-        rospy.sleep(dt)
+        rospy.sleep(dt / 2)
         self.pub_car_cmd.publish(stop_msg)
 
         self.pub_done.publish(complete_msg)
+
+        self.steering_enabled = False
 
 if __name__ == '__main__':
         rospy.init_node('remote_control_node', anonymous=False)

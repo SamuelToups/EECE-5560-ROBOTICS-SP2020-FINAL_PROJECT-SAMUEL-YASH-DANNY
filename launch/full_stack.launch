@@ -23,7 +23,7 @@
     <!-- detection node -->
     <node pkg="detection_node" name="detection_node" type="detection_node.py" output="screen">
       <remap from="detection_node/image" to="anti_instagram_node/corrected_image/compressed"/>
-      <remap from="detection_node/joy" to="joy"/>
+      <remap from="remote_steering_complete" to="duckie_ctrl_node/remote_steering_complete"/>
     </node>
 
   </group>

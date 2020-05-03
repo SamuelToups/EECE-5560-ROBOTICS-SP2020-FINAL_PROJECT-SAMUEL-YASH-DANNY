@@ -80,11 +80,11 @@ class RemoteController:
 
         dt = abs(deviation_amount) / 500
 
-	rotation_direction = np.sign(deviation_amount)
+#	rotation_direction = np.sign(deviation_amount)
 
-        if rotation_direction == 0:
-            rotation_direction = 1
-
+        #if rotation_direction == 0:
+         #   rotation_direction = 1
+	rotation_direction = 1
         back_up_msg = Twist2DStamped()
         rotate_out_msg = Twist2DStamped()
         drive_out_msg = Twist2DStamped()
@@ -118,20 +118,29 @@ class RemoteController:
 
         complete_msg.data = True
 
-        self.pub_car_cmd.publish(back_up_msg)
-        rospy.sleep(dt / 4)
-        self.pub_car_cmd.publish(rotate_out_msg)
-        rospy.sleep(dt / 2)
-        self.pub_car_cmd.publish(drive_out_msg)
-        rospy.sleep(dt / 2)
-        self.pub_car_cmd.publish(rotate_back_msg)
-        rospy.sleep(dt / 2)
-        self.pub_car_cmd.publish(drive_back_msg)
-        rospy.sleep(dt / 2)
-        self.pub_car_cmd.publish(rotate_straight_msg)
-        rospy.sleep(dt / 2)
+#        self.pub_car_cmd.publish(back_up_msg)
+#        rospy.sleep(0.1)
+ 
+	self.pub_car_cmd.publish(rotate_out_msg)
+        rospy.sleep(0.25)
         self.pub_car_cmd.publish(stop_msg)
-
+	rospy.sleep(1)
+	self.pub_car_cmd.publish(drive_out_msg)
+        rospy.sleep(2)
+	self.pub_car_cmd.publish(stop_msg)
+	rospy.sleep(1)
+	self.pub_car_cmd.publish(rotate_back_msg)
+        rospy.sleep(0.35)
+	self.pub_car_cmd.publish(stop_msg)
+	rospy.sleep(1)
+        self.pub_car_cmd.publish(drive_back_msg)
+        rospy.sleep(1.9)
+ 	self.pub_car_cmd.publish(stop_msg)
+        rospy.sleep(1)
+        self.pub_car_cmd.publish(rotate_straight_msg)
+        rospy.sleep(0.25)
+        self.pub_car_cmd.publish(stop_msg)
+	rospy.sleep(1)
         self.pub_done.publish(complete_msg)
 
         self.steering_enabled = False
